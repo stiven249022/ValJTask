@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mis Tareas - ValJTask</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body style="background-color: #f4f6f9;">
+
+    <nav style="background: white; padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
+        <h2 style="color: #007bff; margin: 0;">ValJTask 🚀</h2>
+        <button onclick="cerrarSesion()" class="btn btn-secondary" style="font-size: 0.9rem;">Cerrar Sesión</button>
+    </nav>
+
+    <div style="max-width: 800px; margin: 2rem auto; padding: 0 1rem;">
+        
+        <div class="auth-card" style="text-align: left; margin-bottom: 2rem;">
+            <h3 style="margin-top: 0;">📝 Nueva Tarea</h3>
+            <p style="color: gray; font-size: 0.9rem;">Agrega algo que necesites hacer.</p>
+            
+            <form id="taskForm">
+                <label>Título:</label>
+                <input type="text" id="titulo" placeholder="Ej: Estudiar FastAPI" required>
+                
+                <label>Descripción:</label>
+                <input type="text" id="descripcion" placeholder="Ej: Repasar los verbos HTTP..." required>
+                
+                <button type="submit" class="btn btn-primary" style="margin-top: 10px;">Guardar Tarea</button>
+            </form>
+        </div>
+
+        <h3>Mis Pendientes</h3>
+        <div id="listaTareas">
+            <p style="text-align: center; color: gray;">Cargando...</p>
+        </div>
+    </div>
+
+    <script>
+        // --- PREPARACIÓN INICIAL ---
+        // 1. Recuperamos el TOKEN que guardamos al hacer Login.
+        // Sin esto, el Backend nos rechazará (Error 401).
+        const token = localStorage.getItem('token');
+
+        // 2. Seguridad básica en Frontend:
+        // Si no hay token, "pateamos" al usuario de vuelta al login.
+        if (!token) {
+            window.location.href = "/static/login.html";
+        }
+
+        // ==========================================
+        // PASO 1: CREAR TAREAS (POST)
+        // ==========================================
+        const formulario = document.getElementById('taskForm');
+
+        formulario.addEventListener('submit', async (evento) => {
+            // 'preventDefault' evita que la página se recargue sola al enviar el formulario.
+            evento.preventDefault();
+
+            // A. Capturamos lo que escribió el usuario
+            const tituloUsuario = document.getElementById('titulo').value;
+            const descUsuario = document.getElementById('descripcion').value;
+
+            try {
+                // B. Enviamos la petición al Backend
+                const respuesta = await fetch('/tareas/', {
+                    method: 'POST', // Verbo HTTP para CREAR
+                    headers: {
+                        // Le decimos al servidor que enviamos datos JSON
+                        'Content-Type': 'application/json',
+                        // ¡IMPORTANTE! Aquí pegamos el pase de acceso (Token)
+                        'Authorization': `Bearer ${token}`
+                    },
+                    // Convertimos los datos de JS a texto JSON para que viajen por la red
+                    body: JSON.stringify({ 
+                        titulo: tituloUsuario, 
+                        descripcion: descUsuario 
+                    })
+                });
+
+                // C. Verificamos si salió bien
+                if (respuesta.ok) {
+                    // Limpiamos los campos del formulario
+                    document.getElementById('titulo').value = '';
+                    document.getElementById('descripcion').value = '';
+                    
+                    // Recargamos la lista para ver la tarea nueva al instante
+                    cargarTareas(); 
+                } else {
+                    alert("Error al guardar la tarea. Revisa tu conexión.");
+                }
+            } catch (error) {
+                console.error("Hubo un error técnico:", error);
+            }
+        });
+
+        // ==========================================
+        // PASO 2: VER TAREAS (GET)
+        // ==========================================
+        async function cargarTareas() {
+            const contenedor = document.getElementById('listaTareas');
+
+            try {
+                // A. Pedimos las tareas al Backend
+                const respuesta = await fetch('/tareas/', {
+                    method: 'GET', // Verbo HTTP para LEER
+                    headers: {
+                        // Solo necesitamos identificarnos, no enviamos body
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (respuesta.ok) {
+                    // B. Convertimos la respuesta del servidor (Texto JSON) a Objetos JS
+                    const tareas = await respuesta.json();
+
+                    // C. Limpiamos el contenedor (para no repetir tareas viejas)
+                    contenedor.innerHTML = '';
+
+                    // D. Si no hay tareas, mostramos un mensaje amigable
+                    if (tareas.length === 0) {
+                        contenedor.innerHTML = '<p style="text-align: center; color: #888;">No tienes tareas pendientes 🎉</p>';
+                        return;
+                    }
+
+                    // E. Recorremos cada tarea y creamos su "tarjeta" HTML
+                    tareas.forEach(tarea => {
+                        // Creamos un <div> nuevo
+                        const tarjeta = document.createElement('div');
+                        tarjeta.className = 'task-card'; // Le ponemos la clase CSS para que se vea bonito
+                        
+                        // Llenamos el HTML interno con los datos de la tarea
+                        tarjeta.innerHTML = `
+                            <div>
+                                <strong>${tarea.titulo}</strong>
+                                <p style="margin: 5px 0 0 0; color: #555;">${tarea.descripcion}</p>
+                            </div>
+                            <span style="font-size: 0.8rem; color: #aaa;">#${tarea.id}</span>
+                        `;
+
+                        // F. Agregamos la tarjeta al contenedor principal
+                        contenedor.appendChild(tarjeta);
+                    });
+                } else {
+                    contenedor.innerHTML = '<p>Error cargando tareas :(</p>';
+                }
+            } catch (error) {
+                console.error("Error cargando tareas:", error);
+            }
+        }
+
+        // ==========================================
+        // PASO 3: CERRAR SESIÓN (LOGOUT)
+        // ==========================================
+        function cerrarSesion() {
+            // A. Borramos el token del "bolsillo" del navegador
+            localStorage.removeItem('token');
+            
+            // B. Redirigimos a la página de login
+            window.location.href = "/static/login.html";
+        }
+
+        // ==========================================
+        // INICIO AUTOMÁTICO
+        // ==========================================
+        // Ejecutamos esta función apenas carga la página para ver lo que ya existe
+        cargarTareas();
+
+    </script>
+</body>
+</html>
