@@ -2,17 +2,93 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>ValJTask - Gestión Educativa</title>
-    <link rel="stylesheet" href="/static/style.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ValJTask - Plataforma Educativa</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    
+    <style>
+        /* Un poco de CSS extra para personalidad */
+        body { background-color: #f8f9fa; }
+        .hero-section {
+            background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%);
+            color: white;
+            padding: 80px 0;
+            border-radius: 0 0 50px 50px; /* Curva moderna abajo */
+        }
+        .feature-icon {
+            font-size: 2rem;
+            color: #0d6efd;
+            background: #e7f1ff;
+            padding: 15px;
+            border-radius: 12px;
+            display: inline-block;
+            margin-bottom: 15px;
+        }
+    </style>
 </head>
-<body class="welcome-bg">
-    <div class="hero">
-        <h1 class="logo-text">ValJTask</h1>
-        <p>Donde los profesores y estudiantes conectan con éxito. 📚</p>
-        <div class="buttons">
-            <a href="/static/login.html" class="btn btn-primary">Iniciar Sesión</a>
-            <a href="/static/registro.html" class="btn btn-outline">Crear Cuenta Gratis</a>
+<body>
+
+    <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
+        <div class="container">
+            <a class="navbar-brand fw-bold text-primary" href="#">
+                <i class="bi bi-journal-bookmark-fill"></i> ValJTask
+            </a>
+            <div>
+                <a href="/static/login.html" class="btn btn-outline-primary me-2">Iniciar Sesión</a>
+                <a href="/static/registro.html" class="btn btn-primary">Crear Cuenta</a>
+            </div>
+        </div>
+    </nav>
+
+    <header class="hero-section text-center">
+        <div class="container">
+            <h1 class="display-4 fw-bold mb-3">Gestiona tus clases con éxito</h1>
+            <p class="lead mb-4" style="opacity: 0.9;">
+                La plataforma todo en uno para estudiantes y profesores.<br>
+                Sube tareas, califica y organiza tu vida académica.
+            </p>
+            <a href="/static/registro.html" class="btn btn-light btn-lg px-4 fw-bold text-primary shadow">
+                Empezar Gratis 🚀
+            </a>
+        </div>
+    </header>
+
+    <div class="container my-5">
+        <div class="row g-4 text-center">
+            <div class="col-md-4">
+                <div class="card h-100 border-0 shadow-sm p-4">
+                    <div class="card-body">
+                        <div class="feature-icon"><i class="bi bi-calendar-check"></i></div>
+                        <h4 class="card-title">Planificación</h4>
+                        <p class="card-text text-muted">Nunca más olvides una fecha de entrega. Calendario inteligente integrado.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card h-100 border-0 shadow-sm p-4">
+                    <div class="card-body">
+                        <div class="feature-icon"><i class="bi bi-file-earmark-arrow-up"></i></div>
+                        <h4 class="card-title">Entregas Digitales</h4>
+                        <p class="card-text text-muted">Sube tus archivos PDF o Word directamente a la nube de tu clase.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card h-100 border-0 shadow-sm p-4">
+                    <div class="card-body">
+                        <div class="feature-icon"><i class="bi bi-mortarboard"></i></div>
+                        <h4 class="card-title">Calificaciones</h4>
+                        <p class="card-text text-muted">Recibe retroalimentación inmediata y mira tu promedio en tiempo real.</p>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
+
+    <footer class="text-center py-4 text-muted border-top mt-5">
+        <small>&copy; 2025 ValJTask. Todos los derechos reservados.</small>
+    </footer>
+
 </body>
 </html>

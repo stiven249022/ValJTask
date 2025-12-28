@@ -3,43 +3,82 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Registro - ValJTask</title>
-    <link rel="stylesheet" href="/static/style.css">
+    <title>Crear Cuenta - ValJTask</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <style>
+        body {
+            background-color: #f0f2f5;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .register-card {
+            width: 100%;
+            max-width: 400px;
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+            overflow: hidden; /* Para que el header no se salga de los bordes redondos */
+        }
+        .brand-header {
+            background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%);
+            color: white;
+            padding: 2rem;
+            text-align: center;
+        }
+    </style>
 </head>
-<body class="welcome-bg">
+<body>
 
-    <div class="auth-card">
-        <h2 style="color: #007bff;">Crear Cuenta</h2>
-        <p>Únete a ValJTask hoy mismo</p>
+    <div class="card register-card">
+        <div class="brand-header">
+            <h3 class="fw-bold m-0">Únete a ValJTask 🚀</h3>
+            <p class="small opacity-75 m-0" style="color: #e0e0e0;">Crea tu cuenta gratis hoy</p>
+        </div>
         
-        <form id="registerForm">
-            <input type="email" id="email" placeholder="Correo electrónico" required>
-            
-            <input type="password" id="password" placeholder="Contraseña segura" required>
-            
-            <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 10px;">
-                Registrarme
-            </button>
-        </form>
+        <div class="card-body p-4">
+            <form id="registerForm">
+                
+                <div class="form-floating mb-3">
+                    <input type="email" class="form-control" id="email" placeholder="name@example.com" required>
+                    <label for="email">Correo Electrónico</label>
+                    <div class="form-text">Nunca compartiremos tu correo.</div>
+                </div>
+                
+                <div class="form-floating mb-4">
+                    <input type="password" class="form-control" id="password" placeholder="Password" required>
+                    <label for="password">Crea una contraseña</label>
+                </div>
 
-        <p style="margin-top: 15px;">
-            <a href="/static/index.html" style="text-decoration: none; color: #6c757d;">
-                &larr; Volver al inicio
-            </a>
-        </p>
+                <button type="submit" class="btn btn-primary w-100 py-2 fw-bold shadow-sm">
+                    Registrarme
+                </button>
+            </form>
+
+            <div class="text-center mt-4">
+                <small class="text-muted">¿Ya tienes cuenta?</small><br>
+                <a href="/static/login.html" class="text-decoration-none fw-bold">Inicia Sesión aquí</a>
+            </div>
+            
+            <div class="text-center mt-3">
+                 <a href="/static/index.html" class="text-decoration-none small text-muted">← Volver al inicio</a>
+            </div>
+        </div>
     </div>
 
     <script>
         const registerForm = document.getElementById('registerForm');
 
         registerForm.addEventListener('submit', async (e) => {
-            e.preventDefault(); // Evita que la página se recargue
+            e.preventDefault();
 
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
 
             try {
-                // Enviamos los datos a tu API de FastAPI
                 const response = await fetch('/usuarios/', {
                     method: 'POST',
                     headers: {
@@ -52,11 +91,12 @@
                 });
 
                 if (response.ok) {
-                    alert("¡Cuenta creada en ValJTask! Ahora puedes iniciar sesión.");
+                    // Mensaje de éxito más bonito (nativo por ahora)
+                    alert("¡Cuenta creada con éxito! Ahora inicia sesión.");
                     window.location.href = "/static/login.html";
                 } else {
                     const errorData = await response.json();
-                    alert("Error: " + errorData.detail);
+                    alert("Error: " + (errorData.detail || "No se pudo registrar"));
                 }
             } catch (error) {
                 console.error("Error en la conexión:", error);

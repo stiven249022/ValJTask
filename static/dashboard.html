@@ -3,169 +3,198 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mis Tareas - ValJTask</title>
-    <link rel="stylesheet" href="/static/style.css">
+    <title>Panel de Control - ValJTask</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    
+    <style>
+        body { background-color: #f4f6f9; }
+        .card { border: none; box-shadow: 0 4px 6px rgba(0,0,0,0.05); border-radius: 12px; }
+        .task-list-item { 
+            transition: all 0.2s; 
+            border-left: 4px solid #0d6efd;
+        }
+        .task-list-item:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+        .vencida { border-left-color: #dc3545 !important; background-color: #fff5f5; }
+    </style>
 </head>
-<body style="background-color: #f4f6f9;">
+<body>
 
-    <nav style="background: white; padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
-        <h2 style="color: #007bff; margin: 0;">ValJTask 🚀</h2>
-        <button onclick="cerrarSesion()" class="btn btn-secondary" style="font-size: 0.9rem;">Cerrar Sesión</button>
+    <nav class="navbar navbar-dark bg-primary shadow mb-4">
+        <div class="container">
+            <span class="navbar-brand fw-bold mb-0 h1"><i class="bi bi-grid-fill"></i> ValJTask</span>
+            <button onclick="cerrarSesion()" class="btn btn-light btn-sm fw-bold text-primary">
+                <i class="bi bi-box-arrow-right"></i> Salir
+            </button>
+        </div>
     </nav>
 
-    <div style="max-width: 800px; margin: 2rem auto; padding: 0 1rem;">
-        
-        <div class="auth-card" style="text-align: left; margin-bottom: 2rem;">
-            <h3 style="margin-top: 0;">📝 Nueva Tarea</h3>
-            <p style="color: gray; font-size: 0.9rem;">Agrega algo que necesites hacer.</p>
+    <div class="container">
+        <div class="row g-4">
             
-            <form id="taskForm">
-                <label>Título:</label>
-                <input type="text" id="titulo" placeholder="Ej: Estudiar FastAPI" required>
-                
-                <label>Descripción:</label>
-                <input type="text" id="descripcion" placeholder="Ej: Repasar los verbos HTTP..." required>
-                
-                <button type="submit" class="btn btn-primary" style="margin-top: 10px;">Guardar Tarea</button>
-            </form>
-        </div>
+            <div class="col-md-4">
+                <div class="card p-3">
+                    <div class="card-body">
+                        <h5 class="card-title mb-3 fw-bold text-primary">
+                            <i class="bi bi-plus-circle"></i> Nueva Tarea
+                        </h5>
+                        <form id="taskForm">
+                            <div class="mb-3">
+                                <label class="form-label small fw-bold text-muted">Título</label>
+                                <input type="text" id="titulo" class="form-control" placeholder="Ej: Taller de Matemáticas" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label small fw-bold text-muted">Descripción</label>
+                                <textarea id="descripcion" class="form-control" rows="2" placeholder="Detalles..." required></textarea>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label small fw-bold text-muted">Fecha de Entrega</label>
+                                <input type="datetime-local" id="fecha_entrega" class="form-control" required>
+                            </div>
+                            <button type="submit" class="btn btn-primary w-100 fw-bold">
+                                Guardar Tarea
+                            </button>
+                        </form>
+                    </div>
+                </div>
 
-        <h3>Mis Pendientes</h3>
-        <div id="listaTareas">
-            <p style="text-align: center; color: gray;">Cargando...</p>
+                <div class="card mt-3 bg-white">
+                    <div class="card-body text-center">
+                        <h6 class="text-muted">Estado del Semestre</h6>
+                        <h2 class="text-success fw-bold">4.5</h2>
+                        <small class="text-muted">Promedio Actual</small>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-8">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="fw-bold text-dark m-0">Mis Pendientes</h5>
+                    <span class="badge bg-secondary">Actualizado hoy</span>
+                </div>
+
+                <div id="listaTareas" class="d-flex flex-col gap-3">
+                    <div class="text-center py-5 text-muted">
+                        <div class="spinner-border text-primary" role="status"></div>
+                        <p class="mt-2">Cargando tus tareas...</p>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
     <script>
-        // --- PREPARACIÓN INICIAL ---
-        // 1. Recuperamos el TOKEN que guardamos al hacer Login.
-        // Sin esto, el Backend nos rechazará (Error 401).
         const token = localStorage.getItem('token');
+        if (!token) window.location.href = "/static/login.html";
 
-        // 2. Seguridad básica en Frontend:
-        // Si no hay token, "pateamos" al usuario de vuelta al login.
-        if (!token) {
+        function formatearFecha(fechaISO) {
+            if (!fechaISO) return "Sin fecha";
+            const fecha = new Date(fechaISO);
+            return fecha.toLocaleString('es-CO', { 
+                day: '2-digit', month: 'short', year: 'numeric', 
+                hour: '2-digit', minute: '2-digit' 
+            });
+        }
+
+        function cerrarSesion() {
+            localStorage.removeItem('token');
             window.location.href = "/static/login.html";
         }
 
-        // ==========================================
-        // PASO 1: CREAR TAREAS (POST)
-        // ==========================================
-        const formulario = document.getElementById('taskForm');
-
-        formulario.addEventListener('submit', async (evento) => {
-            // 'preventDefault' evita que la página se recargue sola al enviar el formulario.
-            evento.preventDefault();
-
-            // A. Capturamos lo que escribió el usuario
-            const tituloUsuario = document.getElementById('titulo').value;
-            const descUsuario = document.getElementById('descripcion').value;
-
-            try {
-                // B. Enviamos la petición al Backend
-                const respuesta = await fetch('/tareas/', {
-                    method: 'POST', // Verbo HTTP para CREAR
-                    headers: {
-                        // Le decimos al servidor que enviamos datos JSON
-                        'Content-Type': 'application/json',
-                        // ¡IMPORTANTE! Aquí pegamos el pase de acceso (Token)
-                        'Authorization': `Bearer ${token}`
-                    },
-                    // Convertimos los datos de JS a texto JSON para que viajen por la red
-                    body: JSON.stringify({ 
-                        titulo: tituloUsuario, 
-                        descripcion: descUsuario 
-                    })
-                });
-
-                // C. Verificamos si salió bien
-                if (respuesta.ok) {
-                    // Limpiamos los campos del formulario
-                    document.getElementById('titulo').value = '';
-                    document.getElementById('descripcion').value = '';
-                    
-                    // Recargamos la lista para ver la tarea nueva al instante
-                    cargarTareas(); 
-                } else {
-                    alert("Error al guardar la tarea. Revisa tu conexión.");
-                }
-            } catch (error) {
-                console.error("Hubo un error técnico:", error);
-            }
-        });
-
-        // ==========================================
-        // PASO 2: VER TAREAS (GET)
-        // ==========================================
+        // --- CARGAR TAREAS (GET) ---
         async function cargarTareas() {
             const contenedor = document.getElementById('listaTareas');
-
             try {
-                // A. Pedimos las tareas al Backend
-                const respuesta = await fetch('/tareas/', {
-                    method: 'GET', // Verbo HTTP para LEER
-                    headers: {
-                        // Solo necesitamos identificarnos, no enviamos body
-                        'Authorization': `Bearer ${token}`
-                    }
+                const response = await fetch('/tareas/', {
+                    headers: { 'Authorization': `Bearer ${token}` }
                 });
 
-                if (respuesta.ok) {
-                    // B. Convertimos la respuesta del servidor (Texto JSON) a Objetos JS
-                    const tareas = await respuesta.json();
+                if (response.ok) {
+                    const tareas = await response.json();
+                    contenedor.innerHTML = ''; // Limpiar spinner
 
-                    // C. Limpiamos el contenedor (para no repetir tareas viejas)
-                    contenedor.innerHTML = '';
-
-                    // D. Si no hay tareas, mostramos un mensaje amigable
                     if (tareas.length === 0) {
-                        contenedor.innerHTML = '<p style="text-align: center; color: #888;">No tienes tareas pendientes 🎉</p>';
+                        contenedor.innerHTML = `
+                            <div class="alert alert-success text-center" role="alert">
+                                ¡Todo listo! No tienes tareas pendientes 🎉
+                            </div>`;
                         return;
                     }
 
-                    // E. Recorremos cada tarea y creamos su "tarjeta" HTML
                     tareas.forEach(tarea => {
-                        // Creamos un <div> nuevo
-                        const tarjeta = document.createElement('div');
-                        tarjeta.className = 'task-card'; // Le ponemos la clase CSS para que se vea bonito
+                        // Lógica de Vencimiento
+                        const fechaLimite = new Date(tarea.fecha_entrega);
+                        const hoy = new Date();
+                        const esVencida = fechaLimite < hoy;
                         
-                        // Llenamos el HTML interno con los datos de la tarea
+                        // Diseño de la tarjeta
+                        const tarjeta = document.createElement('div');
+                        tarjeta.className = `card task-list-item mb-3 ${esVencida ? 'vencida' : ''}`;
+                        
                         tarjeta.innerHTML = `
-                            <div>
-                                <strong>${tarea.titulo}</strong>
-                                <p style="margin: 5px 0 0 0; color: #555;">${tarea.descripcion}</p>
+                            <div class="card-body d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h5 class="card-title mb-1 fw-bold ${esVencida ? 'text-danger' : 'text-dark'}">
+                                        ${tarea.titulo} 
+                                        ${esVencida ? '<span class="badge bg-danger ms-2">Vencida</span>' : ''}
+                                    </h5>
+                                    <p class="card-text text-muted small mb-2">${tarea.descripcion}</p>
+                                    <div class="d-flex gap-2">
+                                        <span class="badge bg-light text-dark border">
+                                            <i class="bi bi-calendar-event"></i> ${formatearFecha(tarea.fecha_entrega)}
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="dropdown">
+                                    <button class="btn btn-light btn-sm" type="button">
+                                        <i class="bi bi-three-dots-vertical"></i>
+                                    </button>
+                                </div>
                             </div>
-                            <span style="font-size: 0.8rem; color: #aaa;">#${tarea.id}</span>
                         `;
-
-                        // F. Agregamos la tarjeta al contenedor principal
                         contenedor.appendChild(tarjeta);
                     });
-                } else {
-                    contenedor.innerHTML = '<p>Error cargando tareas :(</p>';
                 }
             } catch (error) {
-                console.error("Error cargando tareas:", error);
+                console.error(error);
+                contenedor.innerHTML = '<div class="alert alert-danger">Error de conexión</div>';
             }
         }
 
-        // ==========================================
-        // PASO 3: CERRAR SESIÓN (LOGOUT)
-        // ==========================================
-        function cerrarSesion() {
-            // A. Borramos el token del "bolsillo" del navegador
-            localStorage.removeItem('token');
-            
-            // B. Redirigimos a la página de login
-            window.location.href = "/static/login.html";
-        }
+        // --- CREAR TAREA (POST) ---
+        document.getElementById('taskForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const titulo = document.getElementById('titulo').value;
+            const descripcion = document.getElementById('descripcion').value;
+            const fecha = document.getElementById('fecha_entrega').value;
 
-        // ==========================================
-        // INICIO AUTOMÁTICO
-        // ==========================================
-        // Ejecutamos esta función apenas carga la página para ver lo que ya existe
+            try {
+                const response = await fetch('/tareas/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ 
+                        titulo, descripcion, fecha_entrega: fecha 
+                    })
+                });
+
+                if (response.ok) {
+                    // Limpiar formulario
+                    document.getElementById('titulo').value = '';
+                    document.getElementById('descripcion').value = '';
+                    document.getElementById('fecha_entrega').value = '';
+                    cargarTareas(); // Recargar lista
+                } else {
+                    const error = await response.json();
+                    alert("Error: " + (error.detail[0].msg || error.detail));
+                }
+            } catch (error) { console.error(error); }
+        });
+
+        // Iniciar
         cargarTareas();
-
     </script>
 </body>
 </html>

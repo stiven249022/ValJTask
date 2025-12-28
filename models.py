@@ -1,33 +1,34 @@
-from sqlalchemy import Column, Integer, String, Boolean, ForeignKey
+from sqlalchemy import Column, Integer, String, ForeignKey, DateTime
 from sqlalchemy.orm import relationship
 from database import Base
+from datetime import datetime
 
 class Usuario(Base):
     __tablename__ = "usuarios"
 
     id = Column(Integer, primary_key=True, index=True)
-    email = Column(String(100), unique=True, index=True) # unique=True: No pueden haber dos emails iguales
-    hashed_password = Column(String(255)) # Aquí guardaremos la contraseña encriptada
-    is_active = Column(Boolean, default=True)
-    rol = Column(String(20), default="estudiante")
+    email = Column(String(100), unique=True, index=True)
+    hashed_password = Column(String(255))
+    rol = Column(String(50), default="estudiante")
 
     # RELACIÓN: Un usuario tiene muchas tareas
-    # "Tarea" es el nombre de la clase de abajo
-    # back_populates crea un vínculo de ida y vuelta
-    tareas = relationship("Tarea", back_populates="propietario")
-
+    # OJO AQUÍ: back_populates apunta a "owner" (que está en la clase Tarea)
+    tareas = relationship("Tarea", back_populates="owner") 
 
 class Tarea(Base):
     __tablename__ = "tareas"
 
     id = Column(Integer, primary_key=True, index=True)
-    titulo = Column(String(100))
+    titulo = Column(String(100), index=True)
     descripcion = Column(String(255))
-    completada = Column(Boolean, default=False)
     
-    # CLAVE FORÁNEA (Foreign Key): Aquí guardamos el ID del dueño
-    # usuarios.id hace referencia a la tabla 'usuarios' columna 'id'
+    # Nuevos campos de fecha
+    fecha_inicio = Column(DateTime, default=datetime.now)
+    fecha_entrega = Column(DateTime, nullable=True)
+
+    # Clave foránea
     owner_id = Column(Integer, ForeignKey("usuarios.id"))
 
-    # RELACIÓN INVERSA: Para saber quién es el dueño desde la tarea
-    propietario = relationship("Usuario", back_populates="tareas")
+    # RELACIÓN: Una tarea pertenece a un usuario
+    # OJO AQUÍ: La variable se llama "owner" y back_populates apunta a "tareas"
+    owner = relationship("Usuario", back_populates="tareas")
